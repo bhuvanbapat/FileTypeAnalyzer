@@ -144,7 +144,7 @@ else                concurrency = 32;   // Balanced mode
 
 ## 👤 Author
 
-**Bhuvan** - 2nd Year, Information Science Engineering
+Open source contributor
 
 ---
 
