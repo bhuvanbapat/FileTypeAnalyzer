@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Analyze any file's true type using magic numbers (binary signatures), not just extensions. Detect disguised files, calculate SHA-256 hashes, and measure entropy - techniques used in cybersecurity and digital forensics.">
+    <title>FileTypeAnalyzer Pro - Magic Number Based File Detection</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">🔍</div>
+                <div class="logo-text">
+                    <h1>FileTypeAnalyzer<span class="pro">Pro</span></h1>
+                    <p>Magic Number Based File Detection</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-icon" id="themeToggle" title="Toggle Theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="btn btn-icon" id="historyBtn" title="View History">
+                    <span>📜</span>
+                </button>
+                <button class="btn btn-outline" id="helpBtn">
+                    <span>❓</span> How It Works
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Drop Zone -->
+            <section class="drop-section">
+                <!-- Using LABEL for native click handling (Fixes "Not Working" issue) -->
+                <label class="drop-zone" id="dropZone" for="fileInput" style="display: block;">
+                    <div class="drop-content">
+                        <div class="drop-icon">📂</div>
+                        <h2>Drop Files or Folder Here</h2>
+                        <p>or click to select files</p>
+                        <!-- Actual inputs -->
+                        <input type="file" id="fileInput" multiple webkitdirectory style="display: none;">
+                        <input type="file" id="singleFileInput" multiple style="display: none;">
+                    </div>
+                    <div class="drop-hint">
+                        <span>✨ 40+ file types • Extension mismatch detection • Hash calculation • Entropy
+                            analysis</span>
+                    </div>
+                </label>
+            </section>
+
+            <!-- Loading State -->
+            <section class="loading-section hidden" id="loadingSection">
+                <div class="loader">
+                    <div class="loader-spinner"></div>
+                    <p>Analyzing files...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0%</span>
+
+                    <!-- Live Performance Stats -->
+                    <div class="live-stats" id="liveStats">
+                        <div class="stat-item">
+                            <span class="stat-icon">🧠</span>
+                            <span class="stat-label">Memory:</span>
+                            <span class="stat-value" id="memoryUsage">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">⚡</span>
+                            <span class="stat-label">Speed:</span>
+                            <span class="stat-value" id="processingSpeed">--</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-icon">⏱️</span>
+                            <span class="stat-label">Time:</span>
+                            <span class="stat-value" id="elapsedTime">0.0s</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section hidden" id="resultsSection">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card summary-card">
+                        <div class="card-icon">📁</div>
+                        <div class="card-content">
+                            <span class="card-value" id="totalFiles">0</span>
+                            <span class="card-label">Total Files</span>
+                        </div>
+                    </div>
+                    <div class="card summary-card">
+                        <div class="card-icon">💾</div>
+                        <div class="card-content">
+                            <span class="card-value" id="totalSize">0 MB</span>
+                            <span class="card-label">Total Size</span>
+                        </div>
+                    </div>
+                    <div class="card summary-card">
+                        <div class="card-icon">📊</div>
+                        <div class="card-content">
+                            <span class="card-value" id="fileTypes">0</span>
+                            <span class="card-label">File Types</span>
+                        </div>
+                    </div>
+                    <div class="card summary-card warning" id="issuesCard">
+                        <div class="card-icon">⚠️</div>
+                        <div class="card-content">
+                            <span class="card-value" id="issues">0</span>
+                            <span class="card-label">Issues Found</span>
+                        </div>
+                    </div>
+                    <div class="card summary-card entropy-card" id="entropyCard">
+                        <div class="card-icon">🔐</div>
+                        <div class="card-content">
+                            <span class="card-value" id="encryptedFiles">0</span>
+                            <span class="card-label">Encrypted/Compressed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="card chart-card">
+                        <h3>📊 File Type Distribution</h3>
+                        <div class="chart-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card chart-card">
+                        <h3>📈 Size by Category</h3>
+                        <div class="chart-container">
+                            <canvas id="barChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Files Table -->
+                <div class="card table-card">
+                    <div class="table-header">
+                        <h3>📋 Detailed Analysis</h3>
+                        <div class="table-actions">
+                            <div class="search-box">
+                                <span>🔍</span>
+                                <input type="text" placeholder="Search files..." id="searchInput">
+                            </div>
+                            <select id="filterSelect">
+                                <option value="all">All Files</option>
+                                <option value="issues">Issues Only</option>
+                                <option value="mismatch">Mismatches</option>
+                                <option value="corrupt">Corrupt</option>
+                                <option value="encrypted">Encrypted</option>
+                            </select>
+                            <button class="btn btn-secondary" id="fixExtensionsBtn">
+                                🔧 Fix Extensions
+                            </button>
+                            <button class="btn btn-primary" id="exportBtn">
+                                📥 Export Report
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="resultsTable">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Detected Type</th>
+                                    <th>Category</th>
+                                    <th>Size</th>
+                                    <th>Entropy</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-bar">
+                    <button class="btn btn-primary btn-large" id="organizeBtn">
+                        📁 Organize Files by Type
+                    </button>
+                    <button class="btn btn-secondary" id="resetBtn">
+                        🔄 Analyze New Files
+                    </button>
+                </div>
+            </section>
+        </main>
+
+        <!-- File Detail Modal -->
+        <div class="modal hidden" id="fileDetailModal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content modal-large">
+                <button class="modal-close" id="closeFileDetail">×</button>
+                <h2 id="fileDetailTitle">File Details</h2>
+
+                <div class="file-detail-grid">
+                    <div class="detail-section">
+                        <h3>📋 Basic Info</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">File Name:</span>
+                            <span class="detail-value" id="detailName">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Detected Type:</span>
+                            <span class="detail-value" id="detailType">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Category:</span>
+                            <span class="detail-value" id="detailCategory">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Size:</span>
+                            <span class="detail-value" id="detailSize">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Extension:</span>
+                            <span class="detail-value" id="detailExtension">-</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-section">
+                        <h3>🔐 Security Info</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">SHA-256 Hash:</span>
+                            <span class="detail-value hash-value" id="detailHash">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Entropy:</span>
+                            <span class="detail-value" id="detailEntropy">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Entropy Level:</span>
+                            <span class="detail-value" id="detailEntropyLevel">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-section hex-section">
+                    <h3>🔢 Hex Preview (First 256 bytes)</h3>
+                    <div class="hex-viewer" id="hexViewer">
+                        <pre id="hexContent">Loading...</pre>
+                    </div>
+                    <div class="ascii-viewer">
+                        <pre id="asciiContent">Loading...</pre>
+                    </div>
+                </div>
+
+                <div class="detail-section" id="previewSection">
+                    <h3>👁️ Preview</h3>
+                    <div class="file-preview" id="filePreview">
+                        <p class="no-preview">No preview available</p>
+                    </div>
+                </div>
+
+                <div class="detail-section hidden" id="stringsSection">
+                    <h3>📝 Extracted Strings (Forensics)</h3>
+                    <div class="strings-viewer" id="stringsContent">
+                        <p class="no-preview">No strings found</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Modal -->
+        <div class="modal hidden" id="historyModal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="closeHistory">×</button>
+                <h2>📜 Scan History</h2>
+                <div class="history-list" id="historyList">
+                    <p class="no-history">No scan history yet</p>
+                </div>
+                <button class="btn btn-secondary" id="clearHistoryBtn">🗑️ Clear History</button>
+            </div>
+        </div>
+
+        <!-- Help Modal -->
+        <div class="modal hidden" id="helpModal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <button class="modal-close" id="closeModal">×</button>
+                <h2>🔍 What is FileTypeAnalyzer Pro?</h2>
+
+                <div class="help-section">
+                    <h3>🎯 Purpose</h3>
+                    <p>This tool identifies a file's <strong>true type</strong> by reading its binary signature (magic
+                        number), not just its extension. This is the same technique used by:</p>
+                    <ul>
+                        <li>🛡️ <strong>Antivirus software</strong> - to detect disguised malware</li>
+                        <li>🔬 <strong>Digital forensics</strong> - to recover and identify files</li>
+                        <li>🔐 <strong>Cybersecurity analysts</strong> - to find hidden threats</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>📖 How to Use</h3>
+                    <ul>
+                        <li><strong>Step 1:</strong> Drag and drop any files onto the drop zone</li>
+                        <li><strong>Step 2:</strong> View the analysis results in the table</li>
+                        <li><strong>Step 3:</strong> Click "View" on any file for detailed info</li>
+                        <li><strong>Step 4:</strong> Export the report as JSON if needed</li>
+                    </ul>
+                </div>
+
+                <div class="help-section">
+                    <h3>🎓 Magic Numbers Explained</h3>
+                    <p>Every file type has a unique "signature" at the beginning:</p>
+                    <div class="code-block">
+                        <code>PNG  → 89 50 4E 47 (‰PNG)</code>
+                        <code>PDF  → 25 50 44 46 (%PDF)</code>
+                        <code>ZIP  → 50 4B 03 04 (PK..)</code>
+                        <code>EXE  → 4D 5A       (MZ)</code>
+                    </div>
+                    <p>A file named <code>photo.jpg</code> that is actually an EXE will be detected!</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🔐 Entropy Analysis</h3>
+                    <p>Entropy measures randomness in data (0-8 scale):</p>
+                    <ul>
+                        <li><strong>0-3:</strong> Low entropy (text files, source code)</li>
+                        <li><strong>4-6:</strong> Medium entropy (normal binary files)</li>
+                        <li><strong>7-8:</strong> High entropy (encrypted or compressed)</li>
+                    </ul>
+                    <p>High entropy can indicate ransomware-encrypted files!</p>
+                </div>
+
+                <div class="help-section">
+                    <h3>🛡️ Security Features</h3>
+                    <ul>
+                        <li><span class="badge badge-warning">Extension Mismatch</span> - File claims to be one type but
+                            is another</li>
+                        <li><span class="badge badge-error">Corrupt File</span> - File appears damaged or incomplete
+                        </li>
+                        <li><span class="badge badge-info">SHA-256 Hash</span> - Unique fingerprint for file integrity
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>FileTypeAnalyzer Pro</p>
+        </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Performance Overlay HUD (Game Style) -->
+    <div id="perfHud" class="perf-hud hidden">
+        <div class="perf-header">
+            <span class="perf-title">⚡ SYS __ MONITOR</span>
+            <span class="perf-status" id="perfStatus">IDLE</span>
+        </div>
+
+        <!-- Speed Graph -->
+        <div class="perf-row">
+            <div class="perf-label">
+                <span>I/O SPEED</span>
+                <span id="hudSpeed" class="perf-value">0 MB/s</span>
+            </div>
+            <canvas id="speedGraph" width="280" height="50"></canvas>
+        </div>
+
+        <!-- Memory Graph -->
+        <div class="perf-row">
+            <div class="perf-label">
+                <span>MEMORY</span>
+                <span id="hudMemory" class="perf-value">-- / --</span>
+            </div>
+            <canvas id="memGraph" width="280" height="50"></canvas>
+        </div>
+
+        <!-- CPU/Worker Graph -->
+        <div class="perf-row">
+            <div class="perf-label">
+                <span>CPU THREADS</span>
+                <span id="hudCpu" class="perf-value">0 Active</span>
+            </div>
+            <div class="thread-viz" id="threadViz">
+                <!-- Visualized by JS -->
+            </div>
+        </div>
+
+        <!-- ETA Timer (New) -->
+        <div class="perf-row">
+            <div class="perf-label">
+                <span>EST. REMAINING</span>
+                <span id="hudEta" class="perf-value warning">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
