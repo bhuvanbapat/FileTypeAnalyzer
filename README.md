@@ -1,6 +1,5 @@
 # FileTypeAnalyzer Pro 🔍⚡
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://yourusername.github.io/FileTypeAnalyzer)
 [![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow?style=for-the-badge&logo=javascript)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -10,11 +9,9 @@ A **high-performance, web-based file analysis tool** that identifies files by th
 
 ---
 
-## 🚀 Try It Now
+## 🚀 Getting Started
 
-**[Open FileTypeAnalyzer Pro →](https://yourusername.github.io/FileTypeAnalyzer)**
-
-Or run locally: Just open `index.html` in your browser!
+Run locally: Just open `index.html` in your browser!
 
 ---
 
@@ -112,15 +109,6 @@ FileTypeAnalyzer/
 - **Browser**: Chrome 86+ / Edge 86+ / Firefox 90+ (File System Access API)
 - **RAM**: 4GB minimum, 8GB+ recommended for large batches
 - **No installation required** - runs entirely in browser
-
----
-
-## 🌐 Deploy to GitHub Pages (Free)
-
-1. Push this repo to GitHub
-2. Go to **Settings → Pages**
-3. Select **Source: main branch**
-4. Your app is live at `https://yourusername.github.io/RepoName`
 
 ---
 
